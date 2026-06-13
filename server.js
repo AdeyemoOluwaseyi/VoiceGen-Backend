@@ -67,39 +67,51 @@ app.post("/api/setup-account", async (req, res) => {
 
   const uid   = user.uid;
   const email = user.email;
-  const name  = user.name || email.split("@")[0];
+  const name  = user.name || user.display_name || email.split("@")[0];
 
   try {
     // Check if already set up
     const userDoc = await db.collection("users").doc(uid).get();
-    if (userDoc.exists && userDoc.data().virtualAccount) {
+    if (userDoc.exists && userDoc.data().virtualAccount && userDoc.data().virtualAccount.length > 0) {
+      console.log(`User ${uid} already set up, returning existing data`);
       return res.json({ success: true, data: userDoc.data() });
     }
 
-    // Create Monnify virtual account
-    const token = await getMonnifyToken();
-    const ref   = `VG-${uid.slice(0, 8).toUpperCase()}-${Date.now()}`;
+    // Give free credits immediately even before Monnify
+    const ref = `VG-${uid.slice(0, 8).toUpperCase()}-${Date.now()}`;
+    let virtualAccount = [];
 
-    const mRes = await axios.post(
-      `${MONNIFY_BASE}/api/v2/bank-transfer/reserved-accounts`,
-      {
-        accountReference:      ref,
-        accountName:           `VoiceGen - ${name}`,
-        currencyCode:          "NGN",
-        contractCode:          MONNIFY_CONTRACT,
-        customerEmail:         email,
-        customerName:          name,
-        getAllAvailableBanks:   true,
-      },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    // Try to create Monnify virtual account
+    try {
+      const token = await getMonnifyToken();
+      console.log(`Creating Monnify account for ${email}...`);
 
-    const accounts = mRes.data.responseBody.accounts || [];
-    const virtualAccount = accounts.map(a => ({
-      bankName:      a.bankName,
-      accountNumber: a.accountNumber,
-      accountName:   a.accountName,
-    }));
+      const mRes = await axios.post(
+        `${MONNIFY_BASE}/api/v2/bank-transfer/reserved-accounts`,
+        {
+          accountReference:    ref,
+          accountName:         `VoiceGen - ${name}`,
+          currencyCode:        "NGN",
+          contractCode:        MONNIFY_CONTRACT,
+          customerEmail:       email,
+          customerName:        name,
+          getAllAvailableBanks: true,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      console.log("Monnify response:", JSON.stringify(mRes.data));
+      const accounts = mRes.data.responseBody?.accounts || [];
+      virtualAccount = accounts.map(a => ({
+        bankName:      a.bankName,
+        accountNumber: a.accountNumber,
+        accountName:   a.accountName,
+      }));
+      console.log(`Created ${virtualAccount.length} virtual accounts for ${uid}`);
+    } catch (mErr) {
+      console.error("Monnify error (non-fatal):", mErr.response?.data || mErr.message);
+      // Continue without virtual account — user still gets credits
+    }
 
     // Save to Firestore
     const userData = {
@@ -117,14 +129,15 @@ app.post("/api/setup-account", async (req, res) => {
     await db.collection("users").doc(uid).collection("transactions").add({
       type:      "credit",
       amount:    FREE_CREDITS,
-      note:      "Welcome bonus — free credits",
+      note:      "Welcome bonus — 500 free credits",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
+    console.log(`✅ User ${uid} set up with ${FREE_CREDITS} credits and ${virtualAccount.length} virtual accounts`);
     return res.json({ success: true, data: userData });
 
   } catch (e) {
-    console.error("setup-account error:", e.response?.data || e.message);
+    console.error("setup-account fatal error:", e.message);
     return res.status(500).json({ error: e.message });
   }
 });
