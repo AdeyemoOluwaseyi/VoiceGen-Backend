@@ -7,8 +7,8 @@ const app = express();
 app.use(cors());
 
 // ── CONFIG ──
-const MONNIFY_API_KEY  = process.env.MONNIFY_API_KEY  || "MK_PROD_7N8LKYV3HH";
-const MONNIFY_SECRET   = process.env.MONNIFY_SECRET   || "QE4MRPCHQ88YFTJZDZB1XM4VE1Q1FGVW";
+const MONNIFY_API_KEY  = process.env.MONNIFY_API_KEY  || "MK_PROD_99EVW2RFRB";
+const MONNIFY_SECRET   = process.env.MONNIFY_SECRET   || "2GZ8U3ZRZ62D5TJS45VUCS07ZE0RG4QC";
 const MONNIFY_CONTRACT = process.env.MONNIFY_CONTRACT || "812707482956";
 const MONNIFY_BASE     = "https://api.monnify.com";
 const FREE_CREDITS     = 500;
