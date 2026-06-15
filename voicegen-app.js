@@ -1,4 +1,4 @@
-document.addEventListener('firebaseReady', function(){
+document.addEventListener('DOMContentLoaded', function(){
 (function(){
 var FC={apiKey:"AIzaSyAU32QyPM-GE6EGmKBZvzVukFI8Mn4zpkc",authDomain:"voicegen-11174.firebaseapp.com",projectId:"voicegen-11174",storageBucket:"voicegen-11174.firebasestorage.app",messagingSenderId:"823672984612",appId:"1:823672984612:web:7a3a57d0d853851ed3b4b1"};
 var MK="sk-cp-bksrN1xaAxbb5PVvAFj2Eg2TbFzSH4KIS1VQiFOmBJGEm0u8-c6khKGySWKZEhp11ldbX0pf5x6NsSJfezfCkkAWmTQEMnM7NXuqGLn2HesAkuUQYpb00zM";
@@ -39,10 +39,9 @@ user=null;
 $("vg-land").style.display="flex";
 $("vg-app").style.display="none";
 }
-});
 $("vg-signinbtn").onclick=function(){auth.signInWithPopup(prov).catch(function(e){showStatus("Sign-in failed: "+e.message,"err");});};
 $("vg-signout").onclick=function(){auth.signOut();};
-function isMobile(){return window.innerWidth\x3c=768;}
+function isMobile(){return window.innerWidth<=768;}
 $("vg-hamburger").onclick=function(){
 var sb=$("vg-sidebar"),ov=$("vg-overlay"),mn=$("vg-main-wrap");
 var opening=!sb.classList.contains("open");
@@ -60,7 +59,7 @@ $("vg-overlay").classList.remove("show");
 document.addEventListener("click",function(e){
 var sb=$("vg-sidebar");
 var hb=$("vg-hamburger");
-if(sb.classList.contains("open")&amp;&amp;!sb.contains(e.target)&amp;&amp;!hb.contains(e.target)&amp;&amp;!isMobile()){
+if(sb.classList.contains("open")&&!sb.contains(e.target)&&!hb.contains(e.target)&&!isMobile()){
 sb.classList.remove("open");
 document.getElementById("vg-main-wrap").classList.remove("shifted");
 }
@@ -144,7 +143,7 @@ var all=VOICES.concat(cloned.map(function(v){return{id:v.vid,name:v.name,meta:"C
 all.forEach(function(v){
 var c=document.createElement("div");c.className="vg-vcard"+(v.id===selVoice?" sel":"");
 var hasPreview=VOICES.some(function(bv){return bv.id===v.id;});
-c.innerHTML='\x3cdiv class="vg-vname"\x3e'+v.name+'\x3c/div\x3e\x3cdiv class="vg-vmeta"\x3e'+v.meta+'\x3c/div\x3e'+(hasPreview?'\x3cbutton class="vg-vprev" title="Preview voice"\x3e&#9654;\x3c/button\x3e':'')+'\x3cdiv class="vg-vdot"\x3e\x3c/div\x3e';
+c.innerHTML='<div class="vg-vname">'+v.name+'</div><div class="vg-vmeta">'+v.meta+'</div>'+(hasPreview?'<button class="vg-vprev" title="Preview voice">&#9654;</button>':'')+'<div class="vg-vdot"></div>';
 c.onclick=function(e){
 if(e.target.classList.contains("vg-vprev"))return;
 selVoice=v.id;
@@ -155,7 +154,7 @@ if(hasPreview){
 c.querySelector(".vg-vprev").onclick = async function(e){
 e.stopPropagation();
 var btn = this;
-if (previewAudio &amp;&amp; !previewAudio.paused) {
+if (previewAudio && !previewAudio.paused) {
 previewAudio.pause(); previewAudio = null;
 document.querySelectorAll(".vg-vprev").forEach(function(b){b.innerHTML="&#9654;";b.style.background="";b.disabled=false;});
 return;
@@ -181,7 +180,7 @@ headers: {"Content-Type":"application/json","Authorization":"Bearer "+MK},
 body: JSON.stringify({model:"speech-01-hd",text:ptext,stream:false,voice_setting:{voice_id:v.id,speed:1.0,vol:1.0,pitch:0},audio_setting:{sample_rate:32000,bitrate:128000,format:"mp3"}})
 });
 var data = await res.json();
-if (data.data &amp;&amp; data.data.audio) {
+if (data.data && data.data.audio) {
 var dataUrl = "data:audio/mp3;base64," + data.data.audio;
 previewCache[v.id] = dataUrl;
 if(previewAudio){ previewAudio.pause(); previewAudio=null; }
@@ -201,7 +200,7 @@ btn.innerHTML = "&#9646;&#9646;"; btn.style.background = "#c9a84c"; btn.disabled
 }
 previewAudio.onended = function(){btn.innerHTML="&#9654;";btn.style.background="";previewAudio=null;};
 } else {
-throw new Error(data.base_resp&amp;&amp;data.base_resp.status_msg?data.base_resp.status_msg:"Preview failed");
+throw new Error(data.base_resp&&data.base_resp.status_msg?data.base_resp.status_msg:"Preview failed");
 }
 } catch(err) {
 btn.innerHTML = "&#9654;"; btn.style.background = ""; btn.disabled = false;
@@ -216,12 +215,12 @@ $("vg-script").oninput=function(){$("vg-chars").textContent=this.value.length+" 
 $("vg-speed").oninput=function(){$("vg-speedval").textContent=parseFloat(this.value).toFixed(1)+"×";};
 function splitText(text, maxLen) {
 maxLen = maxLen || 4800;
-if (text.length \x3c= maxLen) return [text];
+if (text.length <= maxLen) return [text];
 var chunks = [], cur = "";
 var sentences = text.match(/[^.!?]+[.!?]+["')\]]*\s*/g) || [text];
-for (var i = 0; i \x3c sentences.length; i++) {
+for (var i = 0; i < sentences.length; i++) {
 var s = sentences[i];
-if ((cur + s).length \x3e maxLen &amp;&amp; cur.length \x3e 0) {
+if ((cur + s).length > maxLen && cur.length > 0) {
 chunks.push(cur.trim());
 cur = s;
 } else {
@@ -242,10 +241,10 @@ audio_setting: {sample_rate: 32000, bitrate: 128000, format: "mp3"}
 })
 });
 var data = await res.json();
-if (data.data &amp;&amp; data.data.audio) {
+if (data.data && data.data.audio) {
 return Uint8Array.from(atob(data.data.audio), function(c){return c.charCodeAt(0);});
 }
-throw new Error(data.base_resp &amp;&amp; data.base_resp.status_msg ? data.base_resp.status_msg : "Generation failed");
+throw new Error(data.base_resp && data.base_resp.status_msg ? data.base_resp.status_msg : "Generation failed");
 }
 function mergeUint8Arrays(arrays) {
 var total = arrays.reduce(function(s,a){return s+a.length;}, 0);
@@ -257,7 +256,7 @@ $("vg-genbtn").onclick = async function(){
 var text = $("vg-script").value.trim();
 if (!text) { showStatus("Please enter some text first.", "err"); return; }
 var cost = text.length;
-if(userCredits \x3c cost){
+if(userCredits < cost){
 showStatus("Not enough credits. You need "+cost.toLocaleString()+" but have "+userCredits.toLocaleString()+". Please top up.", "err");
 switchToTopup();
 return;
@@ -268,8 +267,8 @@ btn.disabled = true;
 var chunks = splitText(text, 4800);
 var audioArrays = [];
 try {
-for (var i = 0; i \x3c chunks.length; i++) {
-btn.innerHTML = '\x3cspan class="vg-spinner"\x3e\x3c/span\x3e Generating part ' + (i+1) + ' of ' + chunks.length + '...';
+for (var i = 0; i < chunks.length; i++) {
+btn.innerHTML = '<span class="vg-spinner"></span> Generating part ' + (i+1) + ' of ' + chunks.length + '...';
 var arr = await generateChunk(chunks[i], selVoice, speed);
 audioArrays.push(arr);
 }
@@ -294,7 +293,7 @@ showStatus("Voiceover ready!", "ok");
 showStatus("Error: " + e.message, "err");
 } finally {
 btn.disabled = false;
-btn.innerHTML = '\x3csvg width="18" height="18" viewBox="0 0 18 18" fill="none"\x3e\x3cpolygon points="5,3 15,9 5,15" fill="currentColor"/\x3e\x3c/svg\x3e Generate Voiceover';
+btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><polygon points="5,3 15,9 5,15" fill="currentColor"/></svg> Generate Voiceover';
 }
 };
 $("vg-dlbtn").onclick=function(){if(!lastBlob)return;var a=document.createElement("a");a.href=URL.createObjectURL(lastBlob);a.download="voicegen_"+Date.now()+".mp3";a.click();};
@@ -302,7 +301,7 @@ async function saveHistory(text, vname, url){
 if(!user) return;
 try {
 var audioData = url;
-if(url &amp;&amp; url.startsWith("blob:")){
+if(url && url.startsWith("blob:")){
 try {
 var resp = await fetch(url);
 var blob = await resp.blob();
@@ -328,18 +327,18 @@ var snap = await db.collection("users").doc(user.uid).collection("history")
 history = snap.docs.map(function(d){
 var data = d.data();
 var audio = data.audioData || data.audioUrl || "";
-return { id:d.id, text:data.text||"", voiceName:data.voiceName||"", audioUrl:audio, createdAt:data.createdAt&amp;&amp;data.createdAt.toDate?data.createdAt.toDate():new Date() };
+return { id:d.id, text:data.text||"", voiceName:data.voiceName||"", audioUrl:audio, createdAt:data.createdAt&&data.createdAt.toDate?data.createdAt.toDate():new Date() };
 });
 } catch(e){ console.warn("History load failed:", e); }
-},d.data(),{createdAt:d.data().createdAt&amp;&amp;d.data().createdAt.toDate?d.data().createdAt.toDate():new Date()});});}
+},d.data(),{createdAt:d.data().createdAt&&d.data().createdAt.toDate?d.data().createdAt.toDate():new Date()});});}
 catch(e){console.warn(e);}
 }
 function renderHistory(){
 var list=$("vg-hlist");
-if(!history.length){list.innerHTML='\x3cdiv class="vg-empty"\x3e\x3cdiv class="big"\x3e♪\x3c/div\x3e\x3cp\x3eNo generations yet.\x3c/p\x3e\x3c/div\x3e';return;}
+if(!history.length){list.innerHTML='<div class="vg-empty"><div class="big">♪</div><p>No generations yet.</p></div>';return;}
 list.innerHTML=history.map(function(item,i){
 var audio = item.audioUrl || item.audioData || "";
-return '\x3cdiv class="vg-hitem"\x3e\x3cdiv class="vg-hicon"\x3e♪\x3c/div\x3e\x3cdiv class="vg-hinfo"\x3e\x3cdiv class="vg-htxt"\x3e'+item.text+'\x3c/div\x3e\x3cdiv class="vg-hmeta"\x3e'+item.voiceName+' · '+(item.createdAt?item.createdAt.toLocaleDateString():'Recently')+'\x3c/div\x3e\x3c/div\x3e'+(audio?'\x3cbutton class="vg-hact" onclick="vgPlay('+i+')" title="Play"\x3e▶\x3c/button\x3e\x3ca class="vg-hact" href="'+audio+'" download="voicegen_'+i+'.mp3" title="Download"\x3e↓\x3c/a\x3e':'')+'\x3c/div\x3e';
+return '<div class="vg-hitem"><div class="vg-hicon">♪</div><div class="vg-hinfo"><div class="vg-htxt">'+item.text+'</div><div class="vg-hmeta">'+item.voiceName+' · '+(item.createdAt?item.createdAt.toLocaleDateString():'Recently')+'</div></div>'+(audio?'<button class="vg-hact" onclick="vgPlay('+i+')" title="Play">▶</button><a class="vg-hact" href="'+audio+'" download="voicegen_'+i+'.mp3" title="Download">↓</a>':'')+'</div>';
 }).join("");
 }
 async function loadTransactions(){
@@ -351,29 +350,29 @@ var res = await fetch(BACKEND+"/api/transactions",{headers:{"Authorization":"Bea
 var data = await res.json();
 var txns = data.transactions || [];
 if(!txns.length){
-el.innerHTML = '\x3cdiv style="text-align:center;color:#bbb;font-size:13px;padding:20px;"\x3eNo transactions yet.\x3c/div\x3e';
+el.innerHTML = '<div style="text-align:center;color:#bbb;font-size:13px;padding:20px;">No transactions yet.</div>';
 return;
 }
 el.innerHTML = txns.map(function(t){
 var isCredit = t.type==="credit";
 var date = t.createdAt ? new Date(t.createdAt).toLocaleDateString() : "";
-return '\x3cdiv style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f0f0f0;"\x3e'+
-'\x3cdiv style="width:36px;height:36px;border-radius:10px;background:'+( isCredit?"#e8f8f0":"#fff0f0")+';display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;"\x3e'+( isCredit?"↑":"↓")+'\x3c/div\x3e'+
-'\x3cdiv style="flex:1;overflow:hidden;"\x3e'+
-'\x3cdiv style="font-size:13px;font-weight:500;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"\x3e'+t.note+'\x3c/div\x3e'+
-'\x3cdiv style="font-size:11px;color:#bbb;margin-top:2px;"\x3e'+date+'\x3c/div\x3e'+
-'\x3c/div\x3e'+
-'\x3cdiv style="font-size:14px;font-weight:700;color:'+( isCredit?"#27ae60":"#e74c3c")+';flex-shrink:0;"\x3e'+( isCredit?"+":"")+Math.abs(t.amount).toLocaleString()+'\x3c/div\x3e'+
-'\x3c/div\x3e';
+return '<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f0f0f0;">'+
+'<div style="width:36px;height:36px;border-radius:10px;background:'+( isCredit?"#e8f8f0":"#fff0f0")+';display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">'+( isCredit?"↑":"↓")+'</div>'+
+'<div style="flex:1;overflow:hidden;">'+
+'<div style="font-size:13px;font-weight:500;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+t.note+'</div>'+
+'<div style="font-size:11px;color:#bbb;margin-top:2px;">'+date+'</div>'+
+'</div>'+
+'<div style="font-size:14px;font-weight:700;color:'+( isCredit?"#27ae60":"#e74c3c")+';flex-shrink:0;">'+( isCredit?"+":"")+Math.abs(t.amount).toLocaleString()+'</div>'+
+'</div>';
 }).join("");
-} catch(e){ if(el) el.innerHTML='\x3cdiv style="color:#bbb;font-size:13px;padding:20px;text-align:center;"\x3eFailed to load transactions.\x3c/div\x3e'; }
+} catch(e){ if(el) el.innerHTML='<div style="color:#bbb;font-size:13px;padding:20px;text-align:center;">Failed to load transactions.</div>'; }
 }
 function renderCloned(){
 var list=$("vg-clonedlist");
-if(!cloned.length){list.innerHTML='\x3cdiv class="vg-empty"\x3e\x3cdiv class="big"\x3e🎙\x3c/div\x3e\x3cp\x3eNo cloned voices yet.\x3cbr\x3e\x3csmall style="color:#bbb;"\x3eCloned voices appear automatically in Text to Speech.\x3c/small\x3e\x3c/p\x3e\x3c/div\x3e';return;}
-list.innerHTML=cloned.map(function(v){return'\x3cdiv class="vg-cloneditem"\x3e\x3cdiv style="width:36px;height:36px;background:linear-gradient(135deg,#1a1a1a,#333);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#c9a84c;font-size:16px;flex-shrink:0;"\x3e🎙\x3c/div\x3e\x3cdiv class="nm"\x3e'+v.name+'\x3cdiv style="font-size:11px;color:#bbb;margin-top:2px;"\x3eCloned · Custom\x3c/div\x3e\x3c/div\x3e\x3cbutton class="vg-usebtn" onclick="vgUseCloned(\''+v.vid+'\',\''+v.name+'\')"\x3eUse in TTS\x3c/button\x3e\x3c/div\x3e';}).join("");
+if(!cloned.length){list.innerHTML='<div class="vg-empty"><div class="big">🎙</div><p>No cloned voices yet.<br><small style="color:#bbb;">Cloned voices appear automatically in Text to Speech.</small></p></div>';return;}
+list.innerHTML=cloned.map(function(v){return'<div class="vg-cloneditem"><div style="width:36px;height:36px;background:linear-gradient(135deg,#1a1a1a,#333);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#c9a84c;font-size:16px;flex-shrink:0;">🎙</div><div class="nm">'+v.name+'<div style="font-size:11px;color:#bbb;margin-top:2px;">Cloned · Custom</div></div><button class="vg-usebtn" onclick="vgUseCloned(\''+v.vid+'\',\''+v.name+'\')">Use in TTS</button></div>';}).join("");
 }
-list.innerHTML=cloned.map(function(v){return'\x3cdiv class="vg-cloneditem"\x3e\x3cdiv class="nm"\x3e'+v.name+'\x3c/div\x3e\x3cbutton class="vg-usebtn" onclick="vgUseCloned(\''+v.vid+'\',\''+v.name+'\')"\x3eUse Voice\x3c/button\x3e\x3c/div\x3e';}).join("");
+list.innerHTML=cloned.map(function(v){return'<div class="vg-cloneditem"><div class="nm">'+v.name+'</div><button class="vg-usebtn" onclick="vgUseCloned(\''+v.vid+'\',\''+v.name+'\')">Use Voice</button></div>';}).join("");
 }
 window.vgUseCloned=function(id,name){
 selVoice=id;renderVoices();
@@ -436,12 +435,12 @@ userReferralCount = data.referralCount||0;
 renderCreditsBar();
 var bc = document.getElementById("vg-big-credits");
 if(bc) bc.textContent = userCredits.toLocaleString();
-if(!userReferralCode &amp;&amp; user){
+if(!userReferralCode && user){
 console.log("No referral code found, triggering setup...");
 setupAccount(user);
 }
 var refEl = $("ref-link-display");
-if(refEl &amp;&amp; refEl.textContent !== "Loading..." &amp;&amp; userReferralCode){
+if(refEl && refEl.textContent !== "Loading..." && userReferralCode){
 refEl.textContent = getReferralLink();
 }
 } catch(e){ console.warn("Balance error:",e); }
@@ -463,7 +462,7 @@ credits: parseInt(this.dataset.credits)
 window.initCryptoPayment = async function(){
 var btn = $("crypto-pay-btn");
 btn.disabled = true;
-btn.innerHTML = '\x3cspan class="vg-spinner"\x3e\x3c/span\x3e Creating payment...';
+btn.innerHTML = '<span class="vg-spinner"></span> Creating payment...';
 try {
 var token = await getToken();
 var res = await fetch(BACKEND+"/api/create-crypto-payment",{
@@ -533,7 +532,7 @@ el.style.color = "#bbb";
 loadBalance().then(function(){
 var el2 = $("ref-link-display");
 if(el2) el2.textContent = userReferralCode ? getReferralLink() : "Please sign out and sign in again";
-if(el2 &amp;&amp; userReferralCode) el2.style.color = "";
+if(el2 && userReferralCode) el2.style.color = "";
 });
 }
 }
@@ -554,17 +553,17 @@ var res = await fetch(BACKEND+"/api/referral-earnings",{headers:{"Authorization"
 var data = await res.json();
 var earnings = data.earnings||[];
 if(!earnings.length){
-list.innerHTML = '\x3cdiv class="vg-empty"\x3e\x3cdiv class="big"\x3e💰\x3c/div\x3e\x3cp\x3eNo earnings yet. Share your link!\x3c/p\x3e\x3c/div\x3e';
+list.innerHTML = '<div class="vg-empty"><div class="big">💰</div><p>No earnings yet. Share your link!</p></div>';
 return;
 }
 list.innerHTML = earnings.map(function(e){
 var date = e.createdAt ? new Date(e.createdAt).toLocaleDateString() : "";
-return '\x3cdiv style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f0f0f0;"\x3e'+
-'\x3cdiv style="width:36px;height:36px;background:#e8f8f0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;"\x3e💰\x3c/div\x3e'+
-'\x3cdiv style="flex:1;"\x3e\x3cdiv style="font-size:13px;font-weight:500;color:#1a1a1a;"\x3e'+e.note+'\x3c/div\x3e\x3cdiv style="font-size:11px;color:#bbb;margin-top:2px;"\x3e'+date+'\x3c/div\x3e\x3c/div\x3e'+
-'\x3cdiv style="font-size:14px;font-weight:700;color:#27ae60;"\x3e+₦'+e.amountNGN.toLocaleString()+'\x3c/div\x3e\x3c/div\x3e';
+return '<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f0f0f0;">'+
+'<div style="width:36px;height:36px;background:#e8f8f0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">💰</div>'+
+'<div style="flex:1;"><div style="font-size:13px;font-weight:500;color:#1a1a1a;">'+e.note+'</div><div style="font-size:11px;color:#bbb;margin-top:2px;">'+date+'</div></div>'+
+'<div style="font-size:14px;font-weight:700;color:#27ae60;">+₦'+e.amountNGN.toLocaleString()+'</div></div>';
 }).join("");
-} catch(ex){ if(list) list.innerHTML='\x3cdiv class="vg-empty"\x3e\x3cp\x3eFailed to load earnings.\x3c/p\x3e\x3c/div\x3e'; }
+} catch(ex){ if(list) list.innerHTML='<div class="vg-empty"><p>Failed to load earnings.</p></div>'; }
 }
 var verifyTimer = null;
 var accountVerified = false;
@@ -604,7 +603,7 @@ headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},
 body:JSON.stringify({ bankCode, accountNumber:acctNum })
 });
 var data = await res.json();
-if(data.success &amp;&amp; data.accountName){
+if(data.success && data.accountName){
 $("wd-acct-name").value = data.accountName;
 $("wd-acct-name-text").textContent = "✓ "+data.accountName;
 $("wd-acct-name-text").style.color = "#27ae60";
@@ -632,7 +631,7 @@ async function fetchLiveRate(){
 try {
 var res = await fetch("https://open.er-api.com/v6/latest/USD");
 var data = await res.json();
-if(data.rates &amp;&amp; data.rates.NGN){
+if(data.rates && data.rates.NGN){
 liveUsdRate = data.rates.NGN;
 var el = $("wd-rate-display");
 if(el) el.textContent = "Live rate: $1 USD = ₦"+liveUsdRate.toLocaleString()+" (updated just now)";
@@ -647,7 +646,7 @@ liveUsdRate = 1600;
 }
 function updateBalanceUsd(){
 var el = $("ref-balance-usd");
-if(el &amp;&amp; liveUsdRate>0){
+if(el && liveUsdRate>0){
 var usd = (userReferralEarnings / liveUsdRate).toFixed(2);
 el.textContent = "≈ $"+usd+" USD";
 }
@@ -657,9 +656,9 @@ var amtEl = $("wd-amount");
 var equivEl = $("wd-amount-equiv");
 if(!amtEl||!equivEl) return;
 var amt = parseFloat(amtEl.value)||0;
-if(withdrawCurrency==="NGN" &amp;&amp; liveUsdRate>0 &amp;&amp; amt>0){
+if(withdrawCurrency==="NGN" && liveUsdRate>0 && amt>0){
 equivEl.textContent = "≈ $"+(amt/liveUsdRate).toFixed(2)+" USD at live rate";
-} else if(withdrawCurrency==="USD" &amp;&amp; liveUsdRate>0 &amp;&amp; amt>0){
+} else if(withdrawCurrency==="USD" && liveUsdRate>0 && amt>0){
 equivEl.textContent = "≈ ₦"+(amt*liveUsdRate).toLocaleString()+" NGN at live rate";
 } else {
 equivEl.textContent = "";
@@ -702,7 +701,7 @@ if(e.target.id==="wd-amount") updateUsdEquiv();
 });
 window.requestWithdrawal = async function(){
 var amount = parseFloat($("wd-amount").value);
-if(!amount||amount\x3c10000){ showStatus("Minimum withdrawal is ₦10,000","err"); return; }
+if(!amount||amount<10000){ showStatus("Minimum withdrawal is ₦10,000","err"); return; }
 if(amount>userReferralEarnings){ showStatus("Insufficient referral balance","err"); return; }
 var btn = $("wd-btn");
 btn.disabled=true; btn.style.opacity="0.6"; btn.textContent="Processing...";
@@ -718,7 +717,7 @@ payload.accountNumber = $("wd-acct-num").value.trim();
 payload.accountName = $("wd-acct-name").value.trim();
 } else {
 var wallet = $("wd-wallet").value.trim();
-if(!wallet||!wallet.startsWith("T")||wallet.length\x3c30){
+if(!wallet||!wallet.startsWith("T")||wallet.length<30){
 showStatus("Please enter a valid USDT TRC20 wallet address (starts with T)","err");
 btn.disabled=false; btn.style.opacity="1"; btn.textContent="Request Withdrawal";
 return;
@@ -793,8 +792,9 @@ localStorage.setItem("vg-theme", isDark ? "dark" : "light");
 applyTheme();
 renderCreditsBar();
 var bc=document.getElementById("vg-big-credits");
-if(bc &amp;&amp; bc.textContent!=="—") bc.style.color = isDark?"#f0ece0":"#1a1a1a";
+if(bc && bc.textContent!=="—") bc.style.color = isDark?"#f0ece0":"#1a1a1a";
 };
 applyTheme();
 })();
+});
 });
