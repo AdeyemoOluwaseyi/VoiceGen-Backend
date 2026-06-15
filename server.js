@@ -117,7 +117,8 @@ app.post("/api/setup-account", async (req,res) => {
 
     // Notify referrer
     if (referredBy) {
-      await db.collection("users").doc(referredBy).update({
+      await
+        db.collection("users").doc(referredBy).update({
         referralCount: admin.firestore.FieldValue.increment(1),
       });
       console.log(`✅ User ${uid} referred by ${referredBy}`);
@@ -135,14 +136,24 @@ app.get("/api/balance", async (req,res) => {
   const user = await verifyUser(req,res);
   if (!user) return;
   try {
-    const doc = await db.collection("users").doc(user.uid).get();
+    const ref = db.collection("users").doc(user.uid);
+    const doc = await ref.get();
     if (!doc.exists) return res.json({ credits:0, virtualAccount:[], referralCode:"", referralEarningsNGN:0, referralCount:0 });
     const d = doc.data();
+    
+    // Generate referral code if missing
+    let referralCode = d.referralCode || "";
+    if (!referralCode) {
+      referralCode = genRefCode(user.uid);
+      await ref.update({ referralCode });
+      console.log(`✅ Generated missing referral code for ${user.uid}: ${referralCode}`);
+    }
+    
     return res.json({
       credits: d.credits||0,
       virtualAccount: d.virtualAccount||[],
       accountRef: d.accountRef||"",
-      referralCode: d.referralCode||"",
+      referralCode,
       referralEarningsNGN: d.referralEarningsNGN||0,
       referralCount: d.referralCount||0,
     });
@@ -368,6 +379,37 @@ app.post("/api/monnify-webhook", express.raw({ type:"*/*" }), async (req,res) =>
 });
 
 // ══════════════════════════════════════════
+// POST /api/verify-account
+// Verify Nigerian bank account via Monnify
+// ══════════════════════════════════════════
+app.post("/api/verify-account", async (req,res) => {
+  const user = await verifyUser(req,res);
+  if (!user) return;
+  const { bankCode, accountNumber } = req.body;
+  if (!bankCode||!accountNumber||accountNumber.length!==10) {
+    return res.status(400).json({ error:"Invalid bank code or account number" });
+  }
+  try {
+    const token = await getMonnifyToken();
+    const response = await axios.get(
+      `${MONNIFY_BASE}/api/v1/disbursements/account/validate?accountNumber=${accountNumber}&bankCode=${bankCode}`,
+      { headers:{ Authorization:`Bearer ${token}` }}
+    );
+    const body = response.data.responseBody;
+    if (body && body.accountName) {
+      console.log(`✅ Account verified: ${body.accountName} at bank ${bankCode}`);
+      return res.json({ success:true, accountName:body.accountName });
+    } else {
+      return res.status(400).json({ error:"Account not found" });
+    }
+  } catch(e) {
+    const errMsg = e.response?.data?.responseMessage || e.message;
+    console.error("Account verify error:", errMsg);
+    return res.status(400).json({ error: errMsg||"Verification failed" });
+  }
+});
+
+// ══════════════════════════════════════════
 // GET /api/transactions
 // ══════════════════════════════════════════
 app.get("/api/transactions", async (req,res) => {
@@ -426,8 +468,6 @@ app.post("/api/request-withdrawal", async (req,res) => {
     return res.json({ success:true, message:"Withdrawal request submitted. Processing within 20 hours." });
   } catch(e) { return res.status(500).json({ error:e.message }); }
 });
-
 app.get("/", (req,res) => res.json({ status:"VoiceGen API ✅" }));
 const PORT = process.env.PORT||3000;
 app.listen(PORT, ()=>console.log(`VoiceGen backend on port ${PORT}`));
-    
